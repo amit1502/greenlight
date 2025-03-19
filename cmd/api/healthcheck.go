@@ -1,12 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 )
 
 func (app *application) healthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "status: available")
-	fmt.Fprintf(w, "env: %s\n", app.config.env)
-	fmt.Fprintf(w, "version: %s\n", version)
+
+	data := map[string]string{
+		"status":  "available",
+		"env":     app.config.env,
+		"version": version,
+	}
+
+	err := app.writeJson(w, http.StatusOK, data, nil)
+
+	if err != nil {
+		app.logger.Println("Error while parsing data:", err)
+		http.Error(w, "Error while parsing data", http.StatusInternalServerError)
+		return
+	}
 }
